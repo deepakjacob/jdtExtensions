@@ -21,6 +21,13 @@ import org.eclipse.ui.IEditorPart;
 
 import ca.jacob.quickassist.proposals.CreateTypeUsingWizardProposal;
 
+/**
+ * A plugin which provides a quick assist to provide an implementation of an interface with in
+ * Eclipse JDT.
+ * 
+ * @author Jacob Deepak
+ *
+ */
 @SuppressWarnings("restriction")
 public class QuickAssistProcessor implements IQuickAssistProcessor {
 
@@ -50,29 +57,43 @@ public class QuickAssistProcessor implements IQuickAssistProcessor {
     return null;
   }
 
+  /**
+   * See whether an quick assist for an implementation class is relevant in the selected context.
+   * 
+   * @param context the quick assist context.
+   * @param node the selected token from which the quick assist is launched.
+   * @param locations locations where problems found in this compilation unit.
+   * @param resultingCollections the proposals created.
+   * @return
+   */
   private boolean getCreateInterfaceProposal(IInvocationContext context, ASTNode node,
       IProblemLocation[] locations, ArrayList<ICommandAccess> resultingCollections) {
 
+    // continue only if this is an assist context
     if (!(context instanceof AssistContext)) {
       return false;
     }
-
+    // this is a java editor
     IEditorPart editor = ((AssistContext) context).getEditor();
     if (!(editor instanceof JavaEditor)) {
       return false;
     }
-
+    // an interface name or class name will be an instance 
+    // of a SimpleName
     if (!(node instanceof SimpleName)) {
       return false;
     }
-    
+
+    // parent of the selected token needs to be a TypeDeclaration
     if (!(node.getParent() instanceof TypeDeclaration)) {
       return false;
     }
-    
+    // get the compilation unit on which the quick assist is fired.
     ICompilationUnit cu = context.getCompilationUnit();
-    
+
     SimpleName name = (SimpleName) node;
+    // create the proposal, add it to the results and launch
+    // the JDT Class Creation Wizard
     CreateTypeUsingWizardProposal proposal =
         new CreateTypeUsingWizardProposal(cu, name, CreateTypeUsingWizardProposal.K_CLASS, null, 6);
     resultingCollections.add(proposal);
